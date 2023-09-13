@@ -1,0 +1,17 @@
+GET http://localhost:3000/parks
+
+###
+POST http://localhost:3000/parks
+Content-Type: application/json
+
+{
+    "genre": "Yellowstone",
+    "parkName": "Wyoming",
+    "capacity": 20,
+    "currentPlayers": 10
+}
+###
+GET http://localhost:3000/parks/65011d4061912b4949d15c36
+
+###
+DELETE http://localhost:3000/parks/65011d4061912b4949d15c36
