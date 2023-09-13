@@ -5,13 +5,50 @@ POST http://localhost:3000/parks
 Content-Type: application/json
 
 {
-    "genre": "Yellowstone",
+    "address": {
+        "street": "1234 Main St",
+        "city": "Denver",
+        "state": {
+            "fullName": "Colorado",
+            "abbreviation": "CO"
+        },
+        "zipCode": "80202", 
+        "neighborhood": "LoDo",
+        "number": "1234567890"
+    
+    }, 
     "parkName": "Wyoming",
     "capacity": 20,
     "currentPlayers": 10
 }
 ###
-GET http://localhost:3000/parks/65011d4061912b4949d15c36
+GET http://localhost:3000/parks/6502248752d2775c4a069052
 
 ###
 DELETE http://localhost:3000/parks/65011d4061912b4949d15c36
+
+###
+GET http://localhost:3000/parks/6502248752d2775c4a069052/thumbnail
+
+// MATCHES
+
+###
+GET http://localhost:3000/matches
+
+###
+POST http://localhost:3000/matches
+Content-Type: application/json
+
+{
+    "parkId": "6502248752d2775c4a069052",
+    "courtId": "974129843729",
+    "players": [],
+    "date": "2021-09-01T00:00:00.000Z",
+    "note": "any n testttote"
+}
+
+###
+GET http://localhost:3000/matches/6502370003780e82227f3d27
+
+###
+DELETE http://localhost:3000/matches/6502370003780e82227f3d27

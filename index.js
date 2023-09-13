@@ -1,7 +1,9 @@
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import parksRouter from "./routes/parks.js";
+import parksRouter from "./routes/parks/index.js";
+import matchesRouter from "./routes/matches/index.js";
+
 dotenv.config();
 
 const app = express();
@@ -17,6 +19,7 @@ db.once("open", function () {
 app.use(express.json());
 
 app.use("/parks", parksRouter);
+app.use("/matches", matchesRouter);
 
 app.listen(3000, () => {
   console.log("server started");
