@@ -4,9 +4,6 @@ const router = express.Router();
 
 // getting all parks
 router.get("/", async (req, res) => {
-  // check if the user is logged in
-  console.log(req.user);
-  console.log(req.isAuthenticated());
   try {
     const park = await ParkModel.find();
     res.json(park);

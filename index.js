@@ -10,6 +10,8 @@ import session from "express-session";
 import passport from "passport";
 import authRouter from "./routes/auth/index.js";
 import initializePassport from "./passport-config.js";
+import cors from "cors";
+import helmet from "helmet";
 
 dotenv.config();
 
@@ -24,12 +26,19 @@ db.once("open", function () {
   console.log("connected");
 });
 app.use(express.json());
+app.use(
+  cors({
+    origin: "*",
+    credentials: true,
+  })
+);
+app.use(helmet());
 
 app.use(
   session({
-    secret: "test",
-    resave: true,
-    saveUninitialized: true,
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
   })
 );
 
