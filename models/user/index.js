@@ -2,16 +2,45 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
   name: String,
-  email: String,
+  email: {
+    type: String,
+    required: true,
+    //needs to be unique
+  },
+  password: String,
   dateOfBirth: Date,
   rating: {
-    quality: Number,
-    punctuality: Number,
-    friendliness: Number,
+    quality: {
+      type: Number,
+      min: 0,
+      max: 5,
+      default: 0,
+    },
+    punctuality: {
+      type: Number,
+      min: 0,
+      max: 5,
+      default: 0,
+    },
+    friendliness: {
+      type: Number,
+      min: 0,
+      max: 5,
+      default: 0,
+    },
   },
-  ratingCount: Number,
-  matchesPlayed: Number,
-  matchesSubscribed: Number,
+  ratingCount: {
+    type: Number,
+    default: 0,
+  },
+  matchesPlayed: {
+    type: Number,
+    default: 0,
+  },
+  matchesSubscribed: {
+    type: Number,
+    default: 0,
+  },
   profilePicture: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Pictures",
@@ -22,7 +51,7 @@ const userSchema = new mongoose.Schema({
       ref: "Matches",
     },
   ],
-  description: String,
+  description: String, // need to add constraints here
 });
 
 const UserModel = mongoose.model("Users", userSchema);
