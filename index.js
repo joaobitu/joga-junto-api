@@ -24,12 +24,6 @@ db.once("open", function () {
   console.log("connected");
 });
 app.use(express.json());
-app.use("/auth", authRouter);
-app.use("/parks", parksRouter);
-app.use("/matches", matchesRouter);
-app.use("/courts", courtsRouter);
-app.use("/pictures", picturesRouter);
-app.use("/users", usersRouter);
 
 app.use(
   session({
@@ -44,6 +38,13 @@ initializePassport(passport);
 // Secret value should be a process env value
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.use("/auth", authRouter);
+app.use("/parks", parksRouter);
+app.use("/matches", matchesRouter);
+app.use("/courts", courtsRouter);
+app.use("/pictures", picturesRouter);
+app.use("/users", usersRouter);
 
 app.listen(3000, () => {
   console.log("server started");
