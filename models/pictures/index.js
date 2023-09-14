@@ -1,11 +1,24 @@
 import mongoose from "mongoose";
 
 const pictureSchema = new mongoose.Schema({
-  url: String,
+  url: {
+    type: String,
+    required: true,
+  },
   alt: String,
   type: {
-    type: "thumbnail" | "regular",
+    type: String,
     default: "regular",
+    enum: ["regular", "thumbnail", "profile"],
+  },
+  parentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+  },
+  module: {
+    type: String,
+    required: true,
+    enum: ["user", "park", "match", "court"],
   },
 });
 
