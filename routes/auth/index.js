@@ -35,6 +35,11 @@ router.post(
 
 //logout
 router.delete("/logout", (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res
+      .status(401)
+      .json({ message: "Unauthorized, You are not logged in" });
+  }
   req.logOut((err) =>
     err ? res.status(500).json({ message: err.message }) : null
   );

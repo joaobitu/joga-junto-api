@@ -1,5 +1,6 @@
 import express from "express";
 import UserModel from "../../models/user/index.js";
+import isUserAdmin from "../../middleware/role/index.js";
 const router = express.Router();
 
 // get user by id
@@ -34,9 +35,20 @@ router.patch("/:id", getUser, async (req, res) => {
 
 // deleting a user
 router.delete("/:id", getUser, async (req, res) => {
+  if (req.user.id !== req.params.id) {
+    if (!isUserAdmin(req, res, next())) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized, You may only delete your account" });
+    }
+  }
   try {
     await res.user.deleteOne();
-    res.json({ message: "Deleted User" });
+    res.json({
+      message: `Deleted User
+    ${res.user.name}, id: ${res.user.id}
+    `,
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
