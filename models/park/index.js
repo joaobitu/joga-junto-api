@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const parkSchema = new mongoose.Schema({
   address: {
+    // need to add validation for this, despite that adding a park is an admin-only feature
     zipCode: Number,
     street: String,
     city: String,

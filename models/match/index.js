@@ -16,7 +16,10 @@ const matchSchema = new mongoose.Schema({
     },
   ],
   date: Date,
-  note: String,
+  note: {
+    type: String,
+    maxlength: 500,
+  },
 });
 
 const MatchModel = mongoose.model("Matches", matchSchema);

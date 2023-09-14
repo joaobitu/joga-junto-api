@@ -5,9 +5,20 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    //needs to be unique
+    //needs to be unique -> and it is on the database
+    maxlength: 254,
+    match:
+      /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
   },
-  password: String,
+  password: {
+    type: String,
+    required: true,
+    minlength: 8,
+    maxlength: 128,
+    // regex for at least 1 special character, 1 number, 1 uppercase, 1 lowercase
+    match: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+  },
+
   dateOfBirth: Date,
   rating: {
     quality: {
@@ -51,7 +62,11 @@ const userSchema = new mongoose.Schema({
       ref: "Matches",
     },
   ],
-  description: String, // need to add constraints here
+  description: {
+    // eventually I will need some sort of way to filter out or censor bad words
+    type: String,
+    maxlength: 500,
+  },
   role: {
     type: String,
     enum: ["user", "admin"],
