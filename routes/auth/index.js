@@ -35,7 +35,9 @@ router.post(
 
 //logout
 router.delete("/logout", (req, res) => {
-  req.logOut();
+  req.logOut((err) =>
+    err ? res.status(500).json({ message: err.message }) : null
+  );
   res.send("logged out");
 });
 
