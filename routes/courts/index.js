@@ -1,5 +1,6 @@
 import express from "express";
 import CourtModel from "../../models/courts/index.js";
+import isUserAdmin from "../../middleware/role/index.js";
 const router = express.Router();
 
 // getting all courts
@@ -21,9 +22,11 @@ router.get("/:id", getCourt, (req, res) => {
 router.get("/park/:parkId", getCourtByParkId, (req, res) => {
   res.send(res.court);
 });
-
+/**
+ * For now, only admin users will be able to create, edit and delete courts.
+ */
 //creating a court
-router.post("/", async (req, res) => {
+router.post("/", isUserAdmin, async (req, res) => {
   const court = new CourtModel({
     parkId: req?.body?.parkId,
     name: req?.body?.name,
@@ -41,7 +44,7 @@ router.post("/", async (req, res) => {
 });
 
 //updating a court
-router.patch("/:id", getCourt, async (req, res) => {
+router.patch("/:id", [getCourt, isUserAdmin], async (req, res) => {
   if (req.body.parkId != null) {
     res.court.parkId = req.body.parkId;
   }
@@ -63,7 +66,7 @@ router.patch("/:id", getCourt, async (req, res) => {
 });
 
 //deleting a court
-router.delete("/:id", getCourt, async (req, res) => {
+router.delete("/:id", [getCourt, isUserAdmin], async (req, res) => {
   try {
     await res.court.remove();
     res.json({ message: "Deleted Court" });
@@ -88,14 +91,18 @@ async function getCourt(req, res, next) {
 }
 
 //deleting all courts by parkId
-router.delete("/park/:parkId/all", getCourtByParkId, async (req, res) => {
-  try {
-    await res.court.remove();
-    res.json({ message: "Deleted all Courts" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+router.delete(
+  "/park/:parkId/all",
+  [getCourtByParkId, isUserAdmin],
+  async (req, res) => {
+    try {
+      await res.court.remove();
+      res.json({ message: "Deleted all Courts" });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
   }
-});
+);
 
 async function getCourtByParkId(req, res, next) {
   let court;

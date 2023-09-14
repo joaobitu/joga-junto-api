@@ -26,6 +26,7 @@ router.post("/", async (req, res) => {
     players: req?.body?.players,
     date: req?.body?.date,
     note: req?.body?.note,
+    owner: req?.user?.id,
   });
 
   try {

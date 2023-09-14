@@ -1,5 +1,6 @@
 import express from "express";
 import ParkModel from "../../models/park/index.js";
+import isUserAdmin from "../../middleware/role/index.js";
 const router = express.Router();
 
 // getting all parks
@@ -25,9 +26,12 @@ router.get("/:id/thumbnail", getPark, (req, res) => {
     //distance: will need to calculate the distance between the user and the park
   });
 });
+/**
+ For now, only admin users will be able to create, edit and delete parks.
+ **/
 
 //creating a park
-router.post("/", async (req, res) => {
+router.post("/", isUserAdmin, async (req, res) => {
   const park = new ParkModel({
     address: {
       zipCode: req?.body?.address?.zipCode,
@@ -63,7 +67,7 @@ router.post("/", async (req, res) => {
   }
 });
 // editing a park by id
-router.patch("/:id", getPark, async (req, res) => {
+router.patch("/:id", [getPark, isUserAdmin], async (req, res) => {
   try {
     //TODO - check if this is the best way to do it
     const updatedPark = await res.park.save();
@@ -73,7 +77,7 @@ router.patch("/:id", getPark, async (req, res) => {
   }
 });
 // deleting a park
-router.delete("/:id", getPark, (req, res) => {
+router.delete("/:id", [getPark, isUserAdmin], (req, res) => {
   try {
     res.park.deleteOne();
     res.json({ message: "Deleted park" });
