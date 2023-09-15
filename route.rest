@@ -100,10 +100,8 @@ POST http://localhost:3000/auth/register
 Content-Type: application/json
 
 {
-    "name": "test",
-    "email": "test",
-    "password": "test",
-    "dateOfBirth": "2021-09-01T00:00:00.000Z"
+    "email": "any@any.com",
+    "password": "test"
 }
 
 //login 
@@ -112,7 +110,7 @@ POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
-    "email": "test",
+    "email": "any@any.com",
     "password": "test"
 }
 //logout

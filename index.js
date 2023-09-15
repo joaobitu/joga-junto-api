@@ -8,7 +8,7 @@ import initializePassport from "./passport-config.js";
 import cors from "cors";
 import helmet from "helmet";
 import indexRouter from "./routes/index.js";
-import isAuthenticated from "./middleware/authentication/index.js";
+import authenticationStatus from "./middleware/authentication/index.js";
 
 dotenv.config();
 
@@ -26,7 +26,7 @@ db.once("open", function () {
 app.use(express.json());
 app.use(
   cors({
-    origin: "*",
+    origin: "http://localhost:5173",
     credentials: true,
   })
 );
@@ -45,8 +45,9 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use("/auth", authRouter);
-app.use("/", isAuthenticated, indexRouter);
+app.use("/", authenticationStatus(true), indexRouter);
 
 app.listen(3000, () => {
   console.log("server started");
+  console.log("http://localhost:3000");
 });

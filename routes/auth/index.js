@@ -2,11 +2,12 @@ import express from "express";
 import passport from "passport";
 import UserModel from "../../models/user/index.js";
 import bcrypt from "bcrypt";
+import authenticationStatus from "../../middleware/authentication/index.js";
 
 const router = express.Router();
 
 // register
-router.post("/register", async (req, res) => {
+router.post("/register", authenticationStatus(false), async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
     const user = new UserModel({
@@ -24,22 +25,21 @@ router.post("/register", async (req, res) => {
 
 // login
 router.post(
+  //must add better error handling
   "/login",
-  passport.authenticate("local", {
-    session: true,
-  }),
+  [
+    authenticationStatus(false),
+    passport.authenticate("local", {
+      session: true,
+    }),
+  ],
   (req, res) => {
-    res.send("logged in");
+    res.send({ message: "logged in", user: req.user });
   }
 );
 
 //logout
-router.delete("/logout", (req, res) => {
-  if (!req.isAuthenticated()) {
-    return res
-      .status(401)
-      .json({ message: "Unauthorized, You are not logged in" });
-  }
+router.delete("/logout", authenticationStatus(true), (req, res) => {
   req.logOut((err) =>
     err ? res.status(500).json({ message: err.message }) : null
   );
