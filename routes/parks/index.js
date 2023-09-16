@@ -1,16 +1,12 @@
 import express from "express";
 import ParkModel from "../../models/park/index.js";
 import isUserAdmin from "../../middleware/role/index.js";
+import pagination from "../../middleware/pagination/index.js";
 const router = express.Router();
 
 // getting all parks
-router.get("/", async (req, res) => {
-  try {
-    const park = await ParkModel.find();
-    res.json(park);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+router.get("/", pagination(ParkModel), async (req, res) => {
+  res.json(res.paginatedResults.results);
 });
 //get park by id
 router.get("/:id", getPark, (req, res) => {
