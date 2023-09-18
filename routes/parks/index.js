@@ -6,21 +6,24 @@ import sortByGeoDistanceMiddleware from "../../middleware/pagination/index.js";
 const router = express.Router();
 
 // getting all parks
-router.get("/", [sortByGeoDistanceMiddleware, pagination], async (req, res) => {
-  const paginatedResults = res.paginatedResults; // Retrieve the paginated results from the response
-  console.log(res.locals);
-  try {
-    // Execute the query and fetch the paginated results from the database
-    const result = await paginatedResults.results
-      .aggregate([res.geoQuery])
-      .exec();
+router.get(
+  "/",
+  [sortByGeoDistanceMiddleware, pagination(ParkModel)],
+  async (req, res) => {
+    const paginatedResults = res.paginatedResults; // Retrieve the paginated results from the response
+    try {
+      // Execute the query and fetch the paginated results from the database
+      const result = await paginatedResults.results
+        .aggregate([res.geoQuery])
+        .exec();
 
-    // Send the paginated results to the client
-    res.send(result);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+      // Send the paginated results to the client
+      res.send(result);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
   }
-});
+);
 //get park by id
 router.get("/:id", getPark, (req, res) => {
   res.send(res.park);
