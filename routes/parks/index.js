@@ -2,11 +2,24 @@ import express from "express";
 import ParkModel from "../../models/park/index.js";
 import isUserAdmin from "../../middleware/role/index.js";
 import pagination from "../../middleware/pagination/index.js";
+import sortByGeoDistanceMiddleware from "../../middleware/pagination/index.js";
 const router = express.Router();
 
 // getting all parks
-router.get("/", pagination(ParkModel), async (req, res) => {
-  res.json(res.paginatedResults.results);
+router.get("/", [sortByGeoDistanceMiddleware, pagination], async (req, res) => {
+  const paginatedResults = res.paginatedResults; // Retrieve the paginated results from the response
+  console.log(res.locals);
+  try {
+    // Execute the query and fetch the paginated results from the database
+    const result = await paginatedResults.results
+      .aggregate([res.geoQuery])
+      .exec();
+
+    // Send the paginated results to the client
+    res.send(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 });
 //get park by id
 router.get("/:id", getPark, (req, res) => {
@@ -40,10 +53,7 @@ router.post("/", isUserAdmin, async (req, res) => {
       neighborhood: req?.body?.address?.neighborhood,
       number: req?.body?.address?.number,
     },
-    coordinates: {
-      latitude: req?.body?.coordinates?.latitude,
-      longitude: req?.body?.coordinates?.longitude,
-    },
+    coordinates: req?.body?.coordinates,
     description: req?.body?.description,
     name: req?.body?.name,
     functioningHours: {

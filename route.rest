@@ -1,4 +1,12 @@
 GET http://localhost:3000/parks
+Content-Type: application/json
+
+{
+    "lat": 39.7392,
+    "lng": -104.9903,
+    "radius": 1000000000000000
+
+}
 
 ###
 POST http://localhost:3000/parks
@@ -17,6 +25,7 @@ Content-Type: application/json
         "number": "1234567890"
     
     }, 
+    "coordinates": [39.7392, -104.9903],
     "parkName": "Wyoming",
     "capacity": 20,
     "currentPlayers": 10
@@ -116,3 +125,6 @@ Content-Type: application/json
 //logout
 ###
 DELETE http://localhost:3000/auth/logout
+
+
+

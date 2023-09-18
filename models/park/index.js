@@ -14,8 +14,8 @@ const parkSchema = new mongoose.Schema({
     number: Number,
   },
   coordinates: {
-    latitude: Number,
-    longitude: Number,
+    type: [Number, Number],
+    required: true,
   },
   description: String,
   matches: [
