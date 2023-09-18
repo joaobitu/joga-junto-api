@@ -11,12 +11,13 @@ export default function coordinateSort(
     {
       $geoNear: {
         near: { type: "Point", coordinates: [-73.99279, 40.719296] },
-        distanceField: "dist.calculated",
+        distanceField: "distanceInKilometers",
+        distanceMultiplier: 0.001,
       },
     },
     {
       $sort: {
-        "dist.calculated": Number(filters.o),
+        distanceInKilometers: Number(filters.o),
       },
     },
     {
