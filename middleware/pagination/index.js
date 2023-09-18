@@ -4,7 +4,7 @@
 //     o: number; //order
 //   }
 
-const pagination = (model) => {
+export default function pagination(model) {
   return async (req, res, next) => {
     const page = parseInt(req.query.p);
     const take = parseInt(req.query.t);
@@ -25,18 +25,16 @@ const pagination = (model) => {
       };
     }
     try {
-      results.results = await model
+      results.results = model
         .find()
         .limit(take)
         .skip(startIndex)
-        .sort({ createdAt: order })
-        .exec();
+        .sort({ createdAt: order });
+
       res.paginatedResults = results;
       next();
     } catch (e) {
       res.status(500).json({ message: e.message });
     }
   };
-};
-
-export default pagination;
+}

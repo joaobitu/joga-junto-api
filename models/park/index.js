@@ -13,9 +13,17 @@ const parkSchema = new mongoose.Schema({
     neighborhood: String,
     number: Number,
   },
-  coordinates: {
-    latitude: Number,
-    longitude: Number,
+  location: {
+    type: {
+      type: String, // Don't do `{ location: { type: String } }`
+      enum: ["Point"], // 'location.type' must be 'Point'
+      default: "Point",
+      required: true,
+    },
+    coordinates: {
+      type: [Number],
+      required: true,
+    },
   },
   description: String,
   matches: [
@@ -50,6 +58,8 @@ const parkSchema = new mongoose.Schema({
 parkSchema.virtual("formattedaddress").get(function () {
   return `${this.address.street}, ${this.address.number} - ${this.address.neighborhood}, ${this.address.city} - ${this.address.state.abbreviation}`;
 });
+
+parkSchema.index({ location: "2dsphere" });
 
 parkSchema.set("toJSON", { virtuals: true });
 

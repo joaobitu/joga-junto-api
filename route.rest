@@ -1,4 +1,12 @@
-GET http://localhost:3000/parks
+
+
+GET http://localhost:3000/parks?o=1&t=10&p=1
+Content-Type: application/json
+
+{
+    "lat": -104.9903,
+    "lng": 39.7392
+}
 
 ###
 POST http://localhost:3000/parks
@@ -19,7 +27,10 @@ Content-Type: application/json
     }, 
     "parkName": "Wyoming",
     "capacity": 20,
-    "currentPlayers": 10
+    "currentPlayers": 10,
+    "location" : {
+        "coordinates": [-104.9903, 39.7392],
+    }
 }
 ###
 GET http://localhost:3000/parks/6502248752d2775c4a069052
@@ -116,3 +127,6 @@ Content-Type: application/json
 //logout
 ###
 DELETE http://localhost:3000/auth/logout
+
+###
+POST http://localhost:3000/parks/random

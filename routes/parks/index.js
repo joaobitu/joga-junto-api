@@ -2,11 +2,22 @@ import express from "express";
 import ParkModel from "../../models/park/index.js";
 import isUserAdmin from "../../middleware/role/index.js";
 import pagination from "../../middleware/pagination/index.js";
+import coordinateSort from "../../middleware/utility/coordinateSort/index.js";
+
 const router = express.Router();
 
 // getting all parks
 router.get("/", pagination(ParkModel), async (req, res) => {
-  res.json(res.paginatedResults.results);
+  console.log(req.query);
+  const aggregateResults = await ParkModel.aggregate(
+    coordinateSort(req.query.lat, req.query.lng, {
+      o: req.query.o,
+      p: req.query.p,
+      t: req.query.t,
+    })
+  );
+
+  res.send(aggregateResults);
 });
 //get park by id
 router.get("/:id", getPark, (req, res) => {
@@ -27,7 +38,7 @@ router.get("/:id/thumbnail", getPark, (req, res) => {
  **/
 
 //creating a park
-router.post("/", isUserAdmin, async (req, res) => {
+router.post("/", async (req, res) => {
   const park = new ParkModel({
     address: {
       zipCode: req?.body?.address?.zipCode,
@@ -40,9 +51,12 @@ router.post("/", isUserAdmin, async (req, res) => {
       neighborhood: req?.body?.address?.neighborhood,
       number: req?.body?.address?.number,
     },
-    coordinates: {
-      latitude: req?.body?.coordinates?.latitude,
-      longitude: req?.body?.coordinates?.longitude,
+    location: {
+      type: "Point",
+      coordinates: [
+        req?.body?.location?.coordinates?.lng,
+        req?.body?.location?.coordinates?.lat,
+      ],
     },
     description: req?.body?.description,
     name: req?.body?.name,
@@ -62,6 +76,44 @@ router.post("/", isUserAdmin, async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 });
+//create 100 random parks
+// router.post("/random", async (req, res) => {
+//   const getRandomCoordinates = () => {
+//     const latitude = Math.random() * (90 - -90) + -90;
+//     const longitude = Math.random() * (180 - -180) + -180;
+//     return [longitude, latitude];
+//   };
+//   let randomParks = [];
+
+//   for (let i = 0; i < 100; i++) {
+//     randomParks.push(
+//       new ParkModel({
+//         address: {
+//           zipCode: Math.floor(Math.random() * 100000),
+//           street: "random street",
+//           city: `random city ${Math.floor(Math.random() * 100)}`,
+//           state: {
+//             fullName: "random state",
+//             abbreviation: "RS",
+//           },
+//           neighborhood: "random neighborhood",
+//           number: Math.floor(Math.random() * 100),
+//         },
+//         location: {
+//           coordinates: getRandomCoordinates(),
+//         },
+//       })
+//     );
+//   }
+
+//   try {
+//     const newPark = await ParkModel.insertMany(randomParks);
+//     res.status(201).json(newPark);
+//   } catch (err) {
+//     res.status(400).json({ message: err.message });
+//   }
+// });
+
 // editing a park by id
 router.patch("/:id", [getPark, isUserAdmin], async (req, res) => {
   try {
