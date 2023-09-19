@@ -1,7 +1,7 @@
 import express from "express";
-import MatchModel from "../../models/match/index.js";
+import MatchModel from "../model/index.js";
 import mongoose from "mongoose";
-import CourtModel from "../../models/courts/index.js";
+import CourtModel from "../../courts/model/index.js";
 const router = express.Router();
 
 // get match list by court id

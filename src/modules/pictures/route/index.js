@@ -1,5 +1,5 @@
 import express from "express";
-import PictureModel from "../../models/pictures/index.js";
+import PictureModel from "../model/index.js";
 const router = express.Router();
 
 // get picture by id

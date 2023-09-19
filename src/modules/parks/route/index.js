@@ -1,15 +1,12 @@
 import express from "express";
-import ParkModel from "../../models/park/index.js";
-import isUserAdmin from "../../middleware/role/index.js";
-import pagination from "../../middleware/pagination/index.js";
-import coordinateSort from "../../middleware/utility/coordinateSort/index.js";
+import ParkModel from "../model/index.js";
+import isUserAdmin from "../../../common/middleware/role/index.js";
+import coordinateSort from "../../../common/middleware/utility/coordinateSort/index.js";
 
 const router = express.Router();
 
 // getting parks List paginated and by distance
 router.get("/", async (req, res) => {
-  console.log(req.query);
-
   const aggregateResults = await ParkModel.aggregate(
     coordinateSort(Number(req.query.lng), Number(req.query.lat), {
       o: Number(req.query.o) || 1,
@@ -42,7 +39,7 @@ router.get("/:id/thumbnail", getPark, (req, res) => {
  **/
 
 //creating a park
-router.post("/", async (req, res) => {
+router.post("/", isUserAdmin, async (req, res) => {
   const park = new ParkModel({
     address: {
       zipCode: req?.body?.address?.zipCode,

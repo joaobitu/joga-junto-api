@@ -3,12 +3,12 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import session from "express-session";
 import passport from "passport";
-import authRouter from "./routes/auth/index.js";
+import authRouter from "./src/modules/auth/route/index.js";
 import initializePassport from "./passport-config.js";
 import cors from "cors";
 import helmet from "helmet";
-import indexRouter from "./routes/index.js";
-import authenticationStatus from "./middleware/authentication/index.js";
+import indexRouter from "./src/common/routes/index.js";
+import authenticationStatus from "./src/common/middleware/authentication/index.js";
 
 dotenv.config();
 

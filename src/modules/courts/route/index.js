@@ -1,7 +1,7 @@
 import express from "express";
-import CourtModel from "../../models/courts/index.js";
-import isUserAdmin from "../../middleware/role/index.js";
-import ParkModel from "../../models/park/index.js";
+import CourtModel from "../model/index.js";
+import isUserAdmin from "../../../common/middleware/role/index.js";
+import ParkModel from "../../parks/model/index.js";
 
 const router = express.Router();
 

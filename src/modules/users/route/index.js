@@ -1,6 +1,6 @@
 import express from "express";
-import UserModel from "../../models/user/index.js";
-import isUserAdmin from "../../middleware/role/index.js";
+import UserModel from "../model/index.js";
+import isUserAdmin from "../../../common/middleware/role/index.js";
 const router = express.Router();
 
 // get user by id
