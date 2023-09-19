@@ -1,15 +1,12 @@
 import express from "express";
 import MatchModel from "../../models/match/index.js";
+import mongoose from "mongoose";
+import CourtModel from "../../models/courts/index.js";
 const router = express.Router();
 
-// getting all matches
-router.get("/", async (req, res) => {
-  try {
-    const match = await MatchModel.find();
-    res.json(match);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+// get match list by court id
+router.get("/court/:id", getMatchListByCourtId, async (req, res) => {
+  res.send(res.match);
 });
 
 //get match by id
@@ -19,19 +16,23 @@ router.get("/:id", getMatch, (req, res) => {
 
 //creating a match
 router.post("/", async (req, res) => {
-  console.log(req?.body);
+  //TO-DO: this needs to become a transaction
   const match = new MatchModel({
-    parkId: req?.body?.parkId,
     courtId: req?.body?.courtId,
-    players: req?.body?.players,
     date: req?.body?.date,
     note: req?.body?.note,
     owner: req?.user?.id,
   });
 
   try {
-    const newMatch = await match.save();
-    res.status(201).json(newMatch);
+    const savedMatch = await match.save();
+
+    // Update the CourtModel to push the match id
+    await CourtModel.findByIdAndUpdate(req?.body?.courtId, {
+      $push: { matches: savedMatch._id },
+    });
+
+    res.status(201).json(savedMatch);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -39,24 +40,15 @@ router.post("/", async (req, res) => {
 
 //updating a match
 router.patch("/:id", getMatch, async (req, res) => {
-  if (req.body.parkId != null) {
-    res.match.parkId = req.body.parkId;
+  const fieldsToUpdate = req.body;
+
+  for (let field in fieldsToUpdate) {
+    res.match[field] = fieldsToUpdate[field];
   }
-  if (req.body.courtId != null) {
-    res.match.courtId = req.body.courtId;
-  }
-  if (req.body.players != null) {
-    res.match.players = req.body.players;
-  }
-  if (req.body.date != null) {
-    res.match.date = req.body.date;
-  }
-  if (req.body.note != null) {
-    res.match.note = req.body.note;
-  }
+
   try {
-    const updatedMatch = await res.match.save();
-    res.json(updatedMatch);
+    const updated = await res.match.save();
+    res.json(updated);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -66,6 +58,10 @@ router.patch("/:id", getMatch, async (req, res) => {
 router.delete("/:id", getMatch, async (req, res) => {
   try {
     await res.match.deleteOne();
+
+    await CourtModel.findByIdAndUpdate(res.match.courtId, {
+      $pull: { matches: res.match._id },
+    });
     res.json({ message: "Match deleted" });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -77,6 +73,21 @@ async function getMatch(req, res, next) {
   let match;
   try {
     match = await MatchModel.findById(req.params.id);
+    if (match == null) {
+      return res.status(404).json({ message: "Cannot find match" });
+    }
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+
+  res.match = match;
+  next();
+}
+
+async function getMatchListByCourtId(req, res, next) {
+  let match;
+  try {
+    match = await MatchModel.find({ courtId: req.params.courtId });
     if (match == null) {
       return res.status(404).json({ message: "Cannot find match" });
     }

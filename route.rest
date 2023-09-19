@@ -58,16 +58,29 @@ Content-Type: application/json
 GET http://localhost:3000/matches
 
 ###
+GET http://localhost:3000/matches/court/6508ec1cfaa6f5333ba3ff8d
+
+###
 POST http://localhost:3000/matches
 Content-Type: application/json
 
 {
-    "parkId": "6508c1cd6f646ca3524a9b41",
-    "courtId": "974129843729",
-    "players": [],
+    
+    "courtId": "6508ec1cfaa6f5333ba3ff8d",
     "date": "2021-09-01T00:00:00.000Z",
     "note": "any n testttote"
 }
+
+###
+PATCH http://localhost:3000/matches/6508fe5899e64adaf99e2f91
+Content-Type: application/json
+
+{
+    "note": "NEW NOTE"
+}
+
+
+
 
 ###
 GET http://localhost:3000/matches/6508ce111f65531ceb7bcef2

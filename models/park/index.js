@@ -26,12 +26,6 @@ const parkSchema = new mongoose.Schema({
     },
   },
   description: String,
-  matches: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Matches",
-    },
-  ],
   name: String,
   functioningHours: {
     opening: String,

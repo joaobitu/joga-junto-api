@@ -1,13 +1,10 @@
 import mongoose from "mongoose";
 
 const matchSchema = new mongoose.Schema({
-  parkId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Parks",
-  },
   courtId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Courts",
+    required: true,
   },
   players: [
     {
@@ -19,6 +16,11 @@ const matchSchema = new mongoose.Schema({
   note: {
     type: String,
     maxlength: 500,
+  },
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Users",
+    required: true,
   },
 });
 
