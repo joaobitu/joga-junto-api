@@ -1,11 +1,14 @@
 import mongoose from "mongoose";
 
 const pictureSchema = new mongoose.Schema({
-  url: {
+  name: {
     type: String,
     required: true,
   },
-  alt: String,
+  src: {
+    type: String,
+    required: true,
+  },
   type: {
     type: String,
     default: "regular",

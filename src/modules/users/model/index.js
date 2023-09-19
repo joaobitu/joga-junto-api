@@ -72,6 +72,29 @@ const userSchema = new mongoose.Schema({
     enum: ["user", "admin"],
     default: "user",
   },
+  address: {
+    zipCode: Number,
+    street: String,
+    city: String,
+    state: {
+      fullName: String,
+      abbreviation: String,
+    },
+    neighborhood: String,
+    number: Number,
+  },
+  location: {
+    type: {
+      type: String,
+      enum: ["Point"],
+      default: "Point",
+      required: true,
+    },
+    coordinates: {
+      type: [Number],
+      required: true,
+    },
+  },
 });
 
 const UserModel = mongoose.model("Users", userSchema);

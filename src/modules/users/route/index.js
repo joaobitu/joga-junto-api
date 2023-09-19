@@ -10,21 +10,17 @@ router.get("/:id", getUser, (req, res) => {
 
 // updating a user
 router.patch("/:id", getUser, async (req, res) => {
-  if (req.body.name != null) {
-    res.user.name = req.body.name;
+  if (req.user.id !== req.params.id) {
+    return res.status(401).json({
+      message: "Unauthorized, You may only edit your own account",
+    });
   }
-  if (req.body.email != null) {
-    res.user.email = req.body.email;
+  const fieldsToUpdate = req.body;
+
+  for (let field in fieldsToUpdate) {
+    res.user[field] = fieldsToUpdate[field];
   }
-  if (req.body.dateOfBirth != null) {
-    res.user.dateOfBirth = req.body.dateOfBirth;
-  }
-  if (req.body.profilePicture != null) {
-    res.user.profilePicture = req.body.profilePicture;
-  }
-  if (req.body.description != null) {
-    res.user.description = req.body.description;
-  }
+
   try {
     const updatedUser = await res.user.save();
     res.json(updatedUser);

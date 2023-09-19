@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import session from "express-session";
 import passport from "passport";
 import authRouter from "./src/modules/auth/route/index.js";
-import initializePassport from "./passport-config.js";
+import initializePassport from "./src/config/passport/index.js";
 import cors from "cors";
 import helmet from "helmet";
 import indexRouter from "./src/common/routes/index.js";
@@ -45,8 +45,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use("/auth", authRouter);
-app.use("/", authenticationStatus(true), indexRouter);
-
+//app.use("/", authenticationStatus(true), indexRouter);
+app.use("/", indexRouter);
 app.listen(3000, () => {
   console.log("server started");
   console.log("http://localhost:3000");

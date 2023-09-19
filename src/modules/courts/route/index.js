@@ -17,29 +17,6 @@ router.get("/park/:parkId", getCourtByParkId, (req, res) => {
 /**
  * For now, only admin users will be able to create, edit and delete courts.
  */
-//creating a court
-router.post("/", isUserAdmin, async (req, res) => {
-  // needs to eventually become a transaction here
-  const court = new CourtModel({
-    parkId: req?.body?.parkId,
-    name: req?.body?.name,
-    courtType: req?.body?.courtType,
-    genre: req?.body?.genre,
-    // pictures: this will be another endpoint that I'd call to save the pictures
-  });
-
-  try {
-    const newCourt = await court.save();
-
-    await ParkModel.findByIdAndUpdate(req?.body?.parkId, {
-      $push: { courts: newCourt._id },
-    });
-
-    res.status(201).json(newCourt);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
 
 //updating a court
 router.patch("/:id", [getCourt, isUserAdmin], async (req, res) => {
@@ -52,6 +29,30 @@ router.patch("/:id", [getCourt, isUserAdmin], async (req, res) => {
   try {
     const updated = await res.court.save();
     res.json(updated);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+//creating a court
+router.post("/", isUserAdmin, async (req, res) => {
+  // needs to eventually become a transaction here
+  const court = new CourtModel({
+    parkId: req?.body?.parkId,
+    name: req?.body?.name,
+    courtType: req?.body?.courtType,
+    genre: req?.body?.genre,
+    capacity: req?.body?.capacity,
+  });
+
+  try {
+    const newCourt = await court.save();
+
+    await ParkModel.findByIdAndUpdate(req?.body?.parkId, {
+      $push: { courts: newCourt._id },
+    });
+
+    res.status(201).json(newCourt);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }

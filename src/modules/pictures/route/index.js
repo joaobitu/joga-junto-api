@@ -1,5 +1,6 @@
 import express from "express";
 import PictureModel from "../model/index.js";
+import upload from "../../../config/multer/index.js";
 const router = express.Router();
 
 // get picture by id
@@ -8,18 +9,22 @@ router.get("/:id", getPicture, (req, res) => {
 });
 
 // creating a picture
-router.post("/", async (req, res) => {
-  const picture = new PictureModel({
-    url: req?.body?.url,
-    alt: req?.body?.alt,
-    type: req?.body?.type,
-    parentId: req?.body?.parentId,
-    module: req?.body?.module,
-  });
-
+router.post("/", upload.single("file"), async (req, res) => {
   try {
-    const newPicture = await picture.save();
-    res.status(201).json(newPicture);
+    const { name, type, parentId, module } = req.body;
+    const file = req.file;
+
+    const picture = new PictureModel({
+      name: name,
+      src: file.path,
+      type: type,
+      parentId: parentId,
+      module: module,
+    });
+
+    await picture.save();
+
+    res.json(picture);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }

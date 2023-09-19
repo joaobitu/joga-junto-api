@@ -38,6 +38,22 @@ router.get("/:id/thumbnail", getPark, (req, res) => {
  For now, only admin users will be able to create, edit and delete parks.
  **/
 
+// editing a park by id
+router.patch("/:id", [getPark, isUserAdmin], async (req, res) => {
+  const fieldsToUpdate = req.body;
+  // seems to be updating correctly but not returning an error when the field is not found
+  for (let field in fieldsToUpdate) {
+    res.park[field] = fieldsToUpdate[field];
+  }
+
+  try {
+    const updated = await res.park.save();
+    res.json(updated);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
 //creating a park
 router.post("/", isUserAdmin, async (req, res) => {
   const park = new ParkModel({
@@ -78,21 +94,6 @@ router.post("/", isUserAdmin, async (req, res) => {
   }
 });
 
-// editing a park by id
-router.patch("/:id", [getPark, isUserAdmin], async (req, res) => {
-  const fieldsToUpdate = req.body;
-  // seems to be updating correctly but not returning an error when the field is not found
-  for (let field in fieldsToUpdate) {
-    res.park[field] = fieldsToUpdate[field];
-  }
-
-  try {
-    const updated = await res.park.save();
-    res.json(updated);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
 // deleting a park
 router.delete("/:id", [getPark, isUserAdmin], (req, res) => {
   try {

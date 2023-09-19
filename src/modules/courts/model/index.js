@@ -25,6 +25,12 @@ const courtSchema = new mongoose.Schema({
       ref: "Matches",
     },
   ],
+  capacity: {
+    type: Number,
+    min: 6,
+    max: 22,
+    required: true,
+  },
 });
 
 const CourtModel = mongoose.model("Courts", courtSchema);
