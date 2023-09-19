@@ -1,17 +1,9 @@
 import express from "express";
 import CourtModel from "../../models/courts/index.js";
 import isUserAdmin from "../../middleware/role/index.js";
-const router = express.Router();
+import ParkModel from "../../models/park/index.js";
 
-// getting all courts
-router.get("/", async (req, res) => {
-  try {
-    const court = await CourtModel.find();
-    res.json(court);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+const router = express.Router();
 
 //get court by id
 router.get("/:id", getCourt, (req, res) => {
@@ -27,6 +19,7 @@ router.get("/park/:parkId", getCourtByParkId, (req, res) => {
  */
 //creating a court
 router.post("/", isUserAdmin, async (req, res) => {
+  // needs to eventually become a transaction here
   const court = new CourtModel({
     parkId: req?.body?.parkId,
     name: req?.body?.name,
@@ -37,6 +30,11 @@ router.post("/", isUserAdmin, async (req, res) => {
 
   try {
     const newCourt = await court.save();
+
+    await ParkModel.findByIdAndUpdate(req?.body?.parkId, {
+      $push: { courts: newCourt._id },
+    });
+
     res.status(201).json(newCourt);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -45,21 +43,15 @@ router.post("/", isUserAdmin, async (req, res) => {
 
 //updating a court
 router.patch("/:id", [getCourt, isUserAdmin], async (req, res) => {
-  if (req.body.parkId != null) {
-    res.court.parkId = req.body.parkId;
+  const fieldsToUpdate = req.body;
+
+  for (let field in fieldsToUpdate) {
+    res.court[field] = fieldsToUpdate[field];
   }
-  if (req.body.name != null) {
-    res.court.name = req.body.name;
-  }
-  if (req.body.courtType != null) {
-    res.court.courtType = req.body.courtType;
-  }
-  if (req.body.genre != null) {
-    res.court.genre = req.body.genre;
-  }
+
   try {
-    const updatedCourt = await res.court.save();
-    res.json(updatedCourt);
+    const updated = await res.court.save();
+    res.json(updated);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -69,6 +61,10 @@ router.patch("/:id", [getCourt, isUserAdmin], async (req, res) => {
 router.delete("/:id", [getCourt, isUserAdmin], async (req, res) => {
   try {
     await res.court.remove();
+
+    await ParkModel.findByIdAndUpdate(res.court.parkId, {
+      $pull: { courts: res.court._id },
+    });
     res.json({ message: "Deleted Court" });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -78,7 +74,15 @@ router.delete("/:id", [getCourt, isUserAdmin], async (req, res) => {
 async function getCourt(req, res, next) {
   let court;
   try {
-    court = await CourtModel.findById(req.params.id);
+    court = await CourtModel.findById(req.params.id)
+      .populate({
+        path: "matches",
+        populate: {
+          path: "players",
+          select: "name",
+        },
+      })
+      .save();
     if (court == null) {
       return res.status(404).json({ message: "Cannot find court" });
     }

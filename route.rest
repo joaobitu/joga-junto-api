@@ -55,7 +55,7 @@ Content-Type: application/json
 // MATCHES
 
 ###
-GET http://localhost:3000/matches
+
 
 ###
 GET http://localhost:3000/matches/court/6508ec1cfaa6f5333ba3ff8d
@@ -68,6 +68,7 @@ Content-Type: application/json
     
     "courtId": "6508ec1cfaa6f5333ba3ff8d",
     "date": "2021-09-01T00:00:00.000Z",
+    "duration": 2,
     "note": "any n testttote"
 }
 
@@ -83,7 +84,7 @@ Content-Type: application/json
 
 
 ###
-GET http://localhost:3000/matches/6508ce111f65531ceb7bcef2
+GET http://localhost:3000/matches/65090835e5c8ac441c43ce93
 
 ###
 DELETE http://localhost:3000/matches/6508c1cd6f646ca3524a9afb
@@ -91,7 +92,7 @@ DELETE http://localhost:3000/matches/6508c1cd6f646ca3524a9afb
 // COURTS
 
 ###
-GET http://localhost:3000/courts
+GET http://localhost:3000/courts/6508ec1cfaa6f5333ba3ff8d
 
 ###
 POST http://localhost:3000/courts
