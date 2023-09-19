@@ -1,5 +1,5 @@
 
-
+// park endpoint tested and working
 GET http://localhost:3000/parks?o=1&t=10&p=2
 Content-Type: application/json
 
@@ -33,13 +33,24 @@ Content-Type: application/json
     }
 }
 ###
-GET http://localhost:3000/parks/6502248752d2775c4a069052
+GET http://localhost:3000/parks/6508c1cd6f646ca3524a9b41
 
 ###
-DELETE http://localhost:3000/parks/65011d4061912b4949d15c36
+DELETE http://localhost:3000/parks/6508c1cd6f646ca3524a9afb
 
 ###
-GET http://localhost:3000/parks/6502248752d2775c4a069052/thumbnail
+GET http://localhost:3000/parks/6508c1cd6f646ca3524a9afb/thumbnail
+
+###
+PATCH http://localhost:3000/parks/6508c1cd6f646ca3524a9afb/
+Content-Type: application/json
+
+{
+    
+    "description": "test patch 2",
+    "flibberJabber":"tis"
+   
+}
 
 // MATCHES
 
@@ -51,7 +62,7 @@ POST http://localhost:3000/matches
 Content-Type: application/json
 
 {
-    "parkId": "6502248752d2775c4a069052",
+    "parkId": "6508c1cd6f646ca3524a9b41",
     "courtId": "974129843729",
     "players": [],
     "date": "2021-09-01T00:00:00.000Z",
@@ -59,10 +70,10 @@ Content-Type: application/json
 }
 
 ###
-GET http://localhost:3000/matches/6502370003780e82227f3d27
+GET http://localhost:3000/matches/6508ce111f65531ceb7bcef2
 
 ###
-DELETE http://localhost:3000/matches/6502370003780e82227f3d27
+DELETE http://localhost:3000/matches/6508c1cd6f646ca3524a9afb
 
 // COURTS
 

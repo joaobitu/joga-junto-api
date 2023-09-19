@@ -6,7 +6,7 @@ import coordinateSort from "../../middleware/utility/coordinateSort/index.js";
 
 const router = express.Router();
 
-// getting all parks
+// getting parks List paginated and by distance
 router.get("/", pagination(ParkModel), async (req, res) => {
   console.log(req.query);
   const aggregateResults = await ParkModel.aggregate(
@@ -30,7 +30,6 @@ router.get("/:id/thumbnail", getPark, (req, res) => {
     thumbnailPhoto: res.park.pictures[0],
     formattedAddress: res.park.formattedaddress,
     name: res.park.name,
-    //distance: will need to calculate the distance between the user and the park
   });
 });
 /**
@@ -76,50 +75,18 @@ router.post("/", async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 });
-//create 100 random parks
-// router.post("/random", async (req, res) => {
-//   const getRandomCoordinates = () => {
-//     const latitude = Math.random() * (90 - -90) + -90;
-//     const longitude = Math.random() * (180 - -180) + -180;
-//     return [longitude, latitude];
-//   };
-//   let randomParks = [];
-
-//   for (let i = 0; i < 100; i++) {
-//     randomParks.push(
-//       new ParkModel({
-//         address: {
-//           zipCode: Math.floor(Math.random() * 100000),
-//           street: "random street",
-//           city: `random city ${Math.floor(Math.random() * 100)}`,
-//           state: {
-//             fullName: "random state",
-//             abbreviation: "RS",
-//           },
-//           neighborhood: "random neighborhood",
-//           number: Math.floor(Math.random() * 100),
-//         },
-//         location: {
-//           coordinates: getRandomCoordinates(),
-//         },
-//       })
-//     );
-//   }
-
-//   try {
-//     const newPark = await ParkModel.insertMany(randomParks);
-//     res.status(201).json(newPark);
-//   } catch (err) {
-//     res.status(400).json({ message: err.message });
-//   }
-// });
 
 // editing a park by id
 router.patch("/:id", [getPark, isUserAdmin], async (req, res) => {
+  const fieldsToUpdate = req.body;
+  // seems to be updating correctly but not returning an error when the field is not found
+  for (let field in fieldsToUpdate) {
+    res.park[field] = fieldsToUpdate[field];
+  }
+
   try {
-    //TODO - check if this is the best way to do it
-    const updatedPark = await res.park.save();
-    res.json(updatedPark);
+    const updated = await res.park.save();
+    res.json(updated);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
