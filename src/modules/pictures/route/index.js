@@ -1,6 +1,8 @@
 import express from "express";
 import PictureModel from "../model/index.js";
 import upload from "../../../config/multer/index.js";
+import { gcBucket } from "../../../config/multer/index.js";
+import { uuidv4 } from "../../../common/middleware/utility/coordinateSort/index.js";
 const router = express.Router();
 
 // get picture by id
@@ -14,17 +16,22 @@ router.post("/", upload.single("file"), async (req, res) => {
     const { name, type, parentId, module } = req.body;
     const file = req.file;
 
-    const picture = new PictureModel({
-      name: name,
-      src: file.path,
-      type: type,
-      parentId: parentId,
-      module: module,
+    const blob = gcBucket.file(file.originalname + uuidv4());
+    const blobStream = blob.createWriteStream();
+
+    blobStream.on("finish", async () => {
+      const picture = new PictureModel({
+        name: name,
+        type: type,
+        parentId: parentId,
+        module: module,
+        src: `https://storage.googleapis.com/${gcBucket.name}/${blob.name}`,
+      });
+      await picture.save();
+
+      res.json(picture);
     });
-
-    await picture.save();
-
-    res.json(picture);
+    blobStream.end(file.buffer);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
