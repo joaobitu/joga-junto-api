@@ -18,6 +18,11 @@ router.patch("/:id", getUser, async (req, res) => {
   const fieldsToUpdate = req.body;
 
   for (let field in fieldsToUpdate) {
+    if (field === "password") {
+      return res.status(401).json({
+        message: "Unauthorized, You may not edit your password here",
+      });
+    }
     res.user[field] = fieldsToUpdate[field];
   }
 

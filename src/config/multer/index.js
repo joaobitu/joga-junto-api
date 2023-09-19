@@ -25,8 +25,6 @@ const googleCloudConfig = {
   universe_domain: process.env.GOOGLE_CLOUD_UNIVERSE_DOMAIN,
 };
 
-console.log(process.env.GC_PROJECT_ID);
-
 const storage = new Storage({
   projectId: process.env.GC_PROJECT_ID,
   credentials: googleCloudConfig,

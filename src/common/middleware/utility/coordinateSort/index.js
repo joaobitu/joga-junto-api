@@ -1,5 +1,4 @@
 export default function coordinateSort(lng, lat, filters) {
-  console.log(lat, lng, filters);
   return [
     {
       $geoNear: {

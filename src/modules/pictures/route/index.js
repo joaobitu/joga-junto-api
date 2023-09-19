@@ -10,6 +10,16 @@ router.get("/:id", getPicture, (req, res) => {
   res.send(res.picture);
 });
 
+// get pictures by parentId
+router.get("/parent/:id", async (req, res) => {
+  try {
+    const pictures = await PictureModel.find({ parentId: req.params.id });
+    res.json(pictures);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // creating a picture
 router.post("/", upload.single("file"), async (req, res) => {
   try {

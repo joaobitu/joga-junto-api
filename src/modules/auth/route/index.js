@@ -38,6 +38,35 @@ router.post(
   }
 );
 
+//change password
+router.patch(
+  "/changePassword",
+  authenticationStatus(true),
+  async (req, res) => {
+    try {
+      const user = await UserModel.findById(req.user.id);
+      if (user) {
+        const isPasswordCorrect = await bcrypt.compare(
+          req.body.oldPassword,
+          user.password
+        );
+        if (isPasswordCorrect) {
+          const hashedPassword = await bcrypt.hash(req.body.newPassword, 10);
+          user.password = hashedPassword;
+          await user.save();
+          res.status(200).json({ message: "password changed" });
+        } else {
+          res.status(401).json({ message: "wrong password" });
+        }
+      } else {
+        res.status(404).json({ message: "user not found" });
+      }
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  }
+);
+
 //logout
 router.delete("/logout", authenticationStatus(true), (req, res) => {
   req.logOut((err) =>
