@@ -1,30 +1,23 @@
-export default function coordinateSort(
-  lat,
-  lng,
-  filters = {
-    o: 1,
-    p: 1,
-    t: 10,
-  }
-) {
+export default function coordinateSort(lng, lat, filters) {
+  console.log(lat, lng, filters);
   return [
     {
       $geoNear: {
-        near: { type: "Point", coordinates: [-73.99279, 40.719296] },
+        near: { type: "Point", coordinates: [lng, lat] },
         distanceField: "distanceInKilometers",
         distanceMultiplier: 0.001,
       },
     },
     {
       $sort: {
-        distanceInKilometers: Number(filters.o),
+        distanceInKilometers: filters.o,
       },
     },
     {
-      $skip: Number((filters.p - 1) * filters.t),
+      $skip: (filters.p - 1) * filters.t,
     },
     {
-      $limit: Number(filters.t),
+      $limit: filters.t,
     },
   ];
 }

@@ -7,17 +7,22 @@ import coordinateSort from "../../middleware/utility/coordinateSort/index.js";
 const router = express.Router();
 
 // getting parks List paginated and by distance
-router.get("/", pagination(ParkModel), async (req, res) => {
+router.get("/", async (req, res) => {
   console.log(req.query);
+
   const aggregateResults = await ParkModel.aggregate(
-    coordinateSort(req.query.lat, req.query.lng, {
-      o: req.query.o,
-      p: req.query.p,
-      t: req.query.t,
+    coordinateSort(Number(req.query.lng), Number(req.query.lat), {
+      o: Number(req.query.o) || 1,
+      p: Number(req.query.p) || 1,
+      t: Number(req.query.t) || 10,
     })
   );
 
-  res.send(aggregateResults);
+  const aggregateResultsWithFormattedAddress = aggregateResults.map((park) => ({
+    ...park,
+    formattedaddress: `${park.address.street}, ${park.address.number} - ${park.address.neighborhood}, ${park.address.city} - ${park.address.state.abbreviation}`,
+  }));
+  res.send(aggregateResultsWithFormattedAddress);
 });
 //get park by id
 router.get("/:id", getPark, (req, res) => {

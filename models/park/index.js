@@ -47,6 +47,7 @@ const parkSchema = new mongoose.Schema({
   rating: Number,
   ratingCount: Number,
 });
+parkSchema.set("toJSON", { virtuals: true });
 
 // virtual formatted address
 parkSchema.virtual("formattedaddress").get(function () {
@@ -54,8 +55,6 @@ parkSchema.virtual("formattedaddress").get(function () {
 });
 
 parkSchema.index({ location: "2dsphere" });
-
-parkSchema.set("toJSON", { virtuals: true });
 
 const ParkModel = mongoose.model("Parks", parkSchema);
 
