@@ -19,7 +19,19 @@ router.get("/", async (req, res) => {
     ...park,
     formattedaddress: `${park.address.street}, ${park.address.number} - ${park.address.neighborhood}, ${park.address.city} - ${park.address.state.abbreviation}`,
   }));
-  res.send(aggregateResultsWithFormattedAddress);
+
+  const totalParks = await ParkModel.countDocuments();
+
+  const result = {
+    data: aggregateResultsWithFormattedAddress,
+    pagination: {
+      records: totalParks,
+      page: Number(req.query.p) || 1,
+      totalPages: Math.ceil(totalParks / (Number(req.query.t) || 10)),
+    },
+  };
+
+  res.send(result);
 });
 //get park by id
 router.get("/:id", getPark, (req, res) => {
