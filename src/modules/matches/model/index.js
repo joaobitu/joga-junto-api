@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
 
 const matchSchema = new mongoose.Schema({
-  courtId: {
+  park: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Courts",
+    ref: "Parks",
     required: true,
   },
   players: {
