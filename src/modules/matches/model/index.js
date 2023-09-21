@@ -73,7 +73,7 @@ const matchSchema = new mongoose.Schema({
   },
   createdAt: {
     type: Date, // Date type
-    default: Date.now(), // A default value
+    default: Date.now, // A default value
   },
 });
 
