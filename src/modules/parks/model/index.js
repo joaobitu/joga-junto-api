@@ -40,8 +40,30 @@ const parkSchema = new mongoose.Schema({
   ],
   courts: [
     {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Courts",
+      thumbnail: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Pictures",
+        },
+      ],
+      genre: {
+        type: String,
+        enum: ["indoor", "beach", "traditional", "society"],
+        default: "traditional",
+        required: true,
+      },
+      matches: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Matches",
+        },
+      ],
+      capacity: {
+        type: Number,
+        min: 6,
+        max: 22,
+        required: true,
+      },
     },
   ],
   rating: Number,

@@ -1,7 +1,7 @@
 import express from "express";
 import MatchModel from "../model/index.js";
+import coordinateSort from "../../../common/middleware/utility/coordinateSort/index.js";
 
-import CourtModel from "../../courts/model/index.js";
 const router = express.Router();
 
 //get match by id
@@ -9,9 +9,41 @@ router.get("/:id", getMatch, (req, res) => {
   res.send(res.match);
 });
 
-// get match list by court id
-router.get("/court/:id", getMatchListByCourtId, async (req, res) => {
-  res.send(res.match);
+// get match list by distance
+router.get("/", async (req, res) => {
+  const aggregateResults = await MatchModel.aggregate({
+    $lookup: {
+      from: "Parks",
+      localField: "park",
+      foreignField: "_id",
+      pipeline: [
+        {
+          $project: {
+            location: 1,
+          },
+        },
+      ],
+      as: "park",
+    },
+    ...coordinateSort(Number(req.query.lng), Number(req.query.lat), {
+      o: Number(req.query.o) || 1,
+      p: Number(req.query.p) || 1,
+      t: Number(req.query.t) || 10,
+    }),
+  });
+
+  const totalMatches = await MatchModel.countDocuments();
+
+  const result = {
+    data: aggregateResults,
+    pagination: {
+      records: totalMatches,
+      page: Number(req.query.p) || 1,
+      totalPages: Math.ceil(totalMatches / (Number(req.query.t) || 10)),
+    },
+  };
+
+  res.send(result);
 });
 
 //updating match details
@@ -181,21 +213,6 @@ async function getMatch(req, res, next) {
           select: "_id name",
         },
       });
-    if (match == null) {
-      return res.status(404).json({ message: "Cannot find match" });
-    }
-  } catch (err) {
-    return res.status(500).json({ message: err.message });
-  }
-
-  res.match = match;
-  next();
-}
-
-async function getMatchListByCourtId(req, res, next) {
-  let match;
-  try {
-    match = await MatchModel.find({ courtId: req.params.id });
     if (match == null) {
       return res.status(404).json({ message: "Cannot find match" });
     }

@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
 
 const matchSchema = new mongoose.Schema({
-  courtId: {
+  park: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Courts",
+    ref: "Parks",
     required: true,
   },
   players: {
@@ -73,7 +73,7 @@ const matchSchema = new mongoose.Schema({
   },
   createdAt: {
     type: Date, // Date type
-    default: Date.now(), // A default value
+    default: Date.now, // A default value
   },
 });
 
