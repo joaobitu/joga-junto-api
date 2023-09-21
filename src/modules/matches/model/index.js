@@ -71,6 +71,10 @@ const matchSchema = new mongoose.Schema({
     ref: "Users",
     required: true,
   },
+  createdAt: {
+    type: Date, // Date type
+    default: Date.now(), // A default value
+  },
 });
 
 matchSchema.set("toJSON", { virtuals: true });
