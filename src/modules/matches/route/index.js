@@ -160,7 +160,6 @@ router.patch("/:id/kick/:playerId", getMatch, async (req, res) => {
 
 //creating a match
 router.post("/", async (req, res) => {
-  console.log(req.body);
   //TO-DO: this needs to become a transaction
   const park = await ParkModel.findById(req?.body?.park);
 

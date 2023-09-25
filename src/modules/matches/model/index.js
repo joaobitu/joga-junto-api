@@ -78,6 +78,13 @@ const matchSchema = new mongoose.Schema({
   },
 });
 
+matchSchema.pre("save", function (next) {
+  if (this.isNew) {
+    this.players.starters.push(this.owner);
+  }
+  next();
+});
+
 matchSchema.set("toJSON", { virtuals: true });
 
 matchSchema.virtual("status").get(function () {
