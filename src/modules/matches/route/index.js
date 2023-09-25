@@ -1,6 +1,7 @@
 import express from "express";
 import MatchModel from "../model/index.js";
 import coordinateSort from "../../../common/middleware/utility/coordinateSort/index.js";
+import ParkModel from "../../parks/model/index.js";
 
 const router = express.Router();
 
@@ -11,26 +12,49 @@ router.get("/:id", getMatch, (req, res) => {
 
 // get match list by distance
 router.get("/", async (req, res) => {
-  const aggregateResults = await MatchModel.aggregate({
-    $lookup: {
-      from: "Parks",
-      localField: "park",
-      foreignField: "_id",
-      pipeline: [
-        {
-          $project: {
-            location: 1,
+  const aggregateResults = await MatchModel.aggregate([
+    {
+      $lookup: {
+        from: "parks",
+        let: { matchId: "$_id" },
+        pipeline: [
+          {
+            $geoNear: {
+              near: {
+                type: "Point",
+                coordinates: [Number(req.query.lng), Number(req.query.lat)],
+              },
+              distanceField: "distanceInKilometers",
+              distanceMultiplier: 0.001,
+              spherical: true,
+            },
           },
-        },
-      ],
-      as: "park",
+          {
+            $match: {
+              $expr: {
+                $in: ["$$matchId", "$courts.matches"],
+              },
+            },
+          },
+        ],
+        as: "park",
+      },
     },
-    ...coordinateSort(Number(req.query.lng), Number(req.query.lat), {
-      o: Number(req.query.o) || 1,
-      p: Number(req.query.p) || 1,
-      t: Number(req.query.t) || 10,
-    }),
-  });
+    {
+      $unwind: "$park",
+    },
+    {
+      $addFields: {
+        distanceInKilometers: "$distanceInKilometers",
+      },
+    },
+    // need to sort by distance
+    {
+      $sort: {
+        distanceInKilometers: 1,
+      },
+    },
+  ]);
 
   const totalMatches = await MatchModel.countDocuments();
 
@@ -136,10 +160,13 @@ router.patch("/:id/kick/:playerId", getMatch, async (req, res) => {
 
 //creating a match
 router.post("/", async (req, res) => {
+  console.log(req.body);
   //TO-DO: this needs to become a transaction
-  const court = await CourtModel.findById(req?.body?.courtId);
+  const park = await ParkModel.findById(req?.body?.park);
 
-  if (req.body.playersNeeded.starters > court.capacity) {
+  const court = park?.courts.find((court) => court._id == req?.body?.courtId);
+
+  if (req?.body?.playersNeeded?.starters > court?.capacity) {
     return res.status(400).json({
       message: `You can't have more starters than the court capacity`,
     });
@@ -147,21 +174,28 @@ router.post("/", async (req, res) => {
 
   const match = new MatchModel({
     courtId: req?.body?.courtId,
-    startTime: req?.body?.date,
-    endTime: req?.body?.date,
+    park: req?.body?.park,
+    startTime: req?.body?.startTime,
+    endTime: req?.body?.endTime,
     duration: req?.body?.duration,
     playersNeeded: req?.body?.playersNeeded,
     note: req?.body?.note,
-    owner: req?.user?.id,
+    owner: req?.user?.id || req?.body?.owner,
   });
 
   try {
     const savedMatch = await match.save();
 
-    // Update the CourtModel to push the match id
-    await CourtModel.findByIdAndUpdate(req?.body?.courtId, {
-      $push: { matches: savedMatch._id },
-    }).exec();
+    // Update the ParkModel to push the match id
+    await ParkModel.findByIdAndUpdate(
+      req?.body?.park,
+      {
+        $push: { "courts.$[court].matches": savedMatch._id },
+      },
+      {
+        arrayFilters: [{ "court._id": req?.body?.courtId }],
+      }
+    ).exec();
 
     res.status(201).json(savedMatch);
   } catch (err) {
