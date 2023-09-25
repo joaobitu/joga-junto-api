@@ -67,7 +67,7 @@ router.patch("/:id", [getPark, isUserAdmin], async (req, res) => {
 });
 
 //creating a park
-router.post("/", isUserAdmin, async (req, res) => {
+router.post("/", async (req, res) => {
   const park = new ParkModel({
     address: {
       zipCode: req?.body?.address?.zipCode,
@@ -82,10 +82,7 @@ router.post("/", isUserAdmin, async (req, res) => {
     },
     location: {
       type: "Point",
-      coordinates: [
-        req?.body?.location?.coordinates?.lng,
-        req?.body?.location?.coordinates?.lat,
-      ],
+      coordinates: req?.body?.location?.coordinates,
     },
     description: req?.body?.description,
     name: req?.body?.name,
