@@ -10,8 +10,17 @@ router.get("/:id", getMatch, (req, res) => {
   res.send(res.match);
 });
 
+//get unavailable match times by date and court
+router.get("/unavailable-timeslots", unavailableTimeslots, async (req, res) => {
+  res.send(res.unavailableTimeslots);
+});
+
 // get match list by distance
 router.get("/", async (req, res) => {
+  //TO-DO aggregate bug still here
+  //TO-DO need to remove matches that are already finished/started
+  //TO-DO need to remove matches that are already full
+  //TO-DO need to remove matches that were created by an SP
   const aggregateResults = await MatchModel.aggregate([
     {
       $lookup: {
@@ -159,7 +168,7 @@ router.patch("/:id/kick/:playerId", getMatch, async (req, res) => {
 });
 
 //creating a match
-router.post("/", async (req, res) => {
+router.post("/", unavailableTimeslots, async (req, res) => {
   //TO-DO: this needs to become a transaction
   const park = await ParkModel.findById(req?.body?.park);
 
@@ -182,6 +191,23 @@ router.post("/", async (req, res) => {
     owner: req?.user?.id || req?.body?.owner,
   });
 
+  if (res.unavailableTimeslots) {
+    const isUnavailable = res.unavailableTimeslots.some(
+      (unavailableTimeslot) => {
+        return (
+          match.startTime >= unavailableTimeslot.startTime &&
+          match.startTime < unavailableTimeslot.endTime
+        );
+      }
+    );
+
+    if (isUnavailable) {
+      return res.status(400).json({
+        message: `This timeslot is already booked`,
+      });
+    }
+  }
+
   try {
     const savedMatch = await match.save();
 
@@ -202,8 +228,92 @@ router.post("/", async (req, res) => {
   }
 });
 
+//creating a match from service provider
+router.post("/sp", unavailableTimeslots, async (req, res) => {
+  if (req?.user?.role !== "serviceprovider") {
+    return res.status(401).json({
+      message: `Unauthorized, only service providers can create matches from this endpoint`,
+    });
+  }
+
+  const match = new MatchModel({
+    courtId: req?.body?.courtId,
+    park: req?.body?.park,
+    startTime: req?.body?.startTime,
+    endTime: req?.body?.endTime,
+    playersNeeded: {
+      starters: 6,
+      subs: 6,
+    },
+    owner: req?.user?.id || req?.body?.owner,
+  });
+
+  if (res.unavailableTimeslots) {
+    const isUnavailable = res.unavailableTimeslots.some(
+      (unavailableTimeslot) => {
+        return (
+          match.startTime >= unavailableTimeslot.startTime &&
+          match.startTime < unavailableTimeslot.endTime
+        );
+      }
+    );
+
+    if (isUnavailable) {
+      return res.status(400).json({
+        message: `This timeslot is already booked`,
+      });
+    }
+  }
+
+  try {
+    const savedMatch = await match.save();
+
+    // Update the ParkModel to push the match id
+
+    await ParkModel.findByIdAndUpdate(
+      req?.body?.park,
+      {
+        $push: { "courts.$[court].matches": savedMatch._id },
+      },
+      {
+        arrayFilters: [{ "court._id": req?.body?.courtId }],
+      }
+    ).exec();
+
+    res.status(201).json(savedMatch);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
 //deleting a match
 router.delete("/:id", getMatch, async (req, res) => {
+  if (req.user.id !== req.match.owner) {
+    return res
+      .status(401)
+      .json({ message: "Unauthorized, You may only delete your match" });
+  }
+
+  try {
+    await res.match.deleteOne();
+
+    await CourtModel.findByIdAndUpdate(res.match.courtId, {
+      $pull: { matches: res.match._id },
+    });
+    res.json({ message: "Match deleted" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+//deleting a match from service provider
+router.delete("/sp/:id", getMatch, async (req, res) => {
+  if (req.user.role !== "serviceprovider") {
+    return res.status(401).json({
+      message: `Unauthorized, only service providers can delete matches from this endpoint`,
+    });
+  }
+
   if (req.user.id !== req.match.owner) {
     return res
       .status(401)
@@ -254,6 +364,26 @@ async function getMatch(req, res, next) {
   }
 
   res.match = match;
+  next();
+}
+
+async function unavailableTimeslots(req, res, next) {
+  const { date, courtId } = req.query;
+  // checks the list of matches for the court on the date
+
+  const matches = await MatchModel.find({
+    courtId,
+    startTime: { $gte: new Date(date) },
+  });
+
+  const unavailableTimeslots = matches.map((match) => {
+    return {
+      startTime: match.startTime,
+      endTime: match.endTime,
+    };
+  });
+
+  res.unavailableTimeslots = unavailableTimeslots;
   next();
 }
 

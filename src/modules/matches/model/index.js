@@ -76,6 +76,10 @@ const matchSchema = new mongoose.Schema({
     type: Date, // Date type
     default: Date.now, // A default value
   },
+  isMatchFromSP: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 matchSchema.pre("save", function (next) {
@@ -88,17 +92,13 @@ matchSchema.pre("save", function (next) {
 matchSchema.set("toJSON", { virtuals: true });
 
 matchSchema.virtual("status").get(function () {
-  const now = new Date();
-  const matchDate = new Date(this.date);
-  const matchDateEnd = new Date(matchDate.getTime() + this.duration * 3600000);
-  if (now < matchDate) {
+  const now = Date.now();
+  if (now < this.startTime) {
     return "upcoming";
-  } else if (now > matchDateEnd) {
+  } else if (now > this.endTime) {
     return "finished";
-  } else if (now >= matchDate && now <= matchDateEnd) {
-    return "ongoing";
   } else {
-    return "unknown";
+    return "ongoing";
   }
 });
 
