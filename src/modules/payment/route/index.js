@@ -5,7 +5,7 @@ const router = express.Router();
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-router.post("/service-provider-account-create", async (req, res) => {
+router.post("/service-provider", async (req, res) => {
   const { email } = req.body;
 
   const account = await stripe.accounts.create({
@@ -23,8 +23,12 @@ router.post("/service-provider-account-create", async (req, res) => {
   res.send(accountLink);
 });
 
+// transfer to service provider
+// router.post("/transfer", async (req, res) => {
+
 // checkout session
-router.post("/create-checkout-session", async (req, res) => {
+router.post("/checkout", async (req, res) => {
+  //TO-DO will get paid myself and alter transfer manually to service provider
   const { priceId } = req.body;
 
   const session = await stripe.checkout.sessions.create({
@@ -36,12 +40,6 @@ router.post("/create-checkout-session", async (req, res) => {
         quantity: 1,
       },
     ],
-    payment_intent_data: {
-      application_fee_amount: 300,
-      transfer_data: {
-        destination: "acct_1NuPtDBC7hefq2GN",
-      },
-    },
     success_url: "http://localhost:5173/payment-success",
     cancel_url: "http://localhost:5173/payment-cancel",
   });
