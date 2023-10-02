@@ -11,8 +11,14 @@ const matchSchema = new mongoose.Schema({
     starters: {
       type: [
         {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Users",
+          id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Users",
+          },
+          creditsOffered: {
+            type: Number,
+            default: 0,
+          },
         },
       ],
       default: [],
@@ -20,8 +26,14 @@ const matchSchema = new mongoose.Schema({
     subs: {
       type: [
         {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Users",
+          id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Users",
+          },
+          creditsOffered: {
+            type: Number,
+            default: 0,
+          },
         },
       ],
       default: [],
@@ -76,20 +88,36 @@ const matchSchema = new mongoose.Schema({
     type: Date, // Date type
     default: Date.now, // A default value
   },
+
+  creditsPerHour: {
+    type: Number,
+    min: 800,
+    max: 5000,
+    required: true,
+  },
   isMatchFromSP: {
     type: Boolean,
     default: false,
+
   },
 });
 
 matchSchema.pre("save", function (next) {
   if (this.isNew) {
-    this.players.starters.push(this.owner);
+    this.players.starters.push({
+      id: this.owner,
+    });
   }
   next();
 });
 
 matchSchema.set("toJSON", { virtuals: true });
+
+matchSchema.virtual("totalCreditsNeeded").get(function () {
+  const duration = this.endTime - this.startTime;
+  const hours = duration / 3600000;
+  return hours * this.creditsPerHour;
+});
 
 matchSchema.virtual("status").get(function () {
   const now = Date.now();
@@ -100,6 +128,17 @@ matchSchema.virtual("status").get(function () {
   } else {
     return "ongoing";
   }
+});
+
+matchSchema.virtual("totalCreditsOffered").get(function () {
+  let total = 0;
+  this.players.starters.forEach((player) => {
+    total += player.creditsOffered;
+  });
+  this.players.subs.forEach((player) => {
+    total += player.creditsOffered;
+  });
+  return total;
 });
 
 const MatchModel = mongoose.model("Matches", matchSchema);
