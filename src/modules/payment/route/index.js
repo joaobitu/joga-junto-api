@@ -23,9 +23,6 @@ router.post("/service-provider", async (req, res) => {
   res.send(accountLink);
 });
 
-// transfer to service provider
-// router.post("/transfer", async (req, res) => {
-
 // checkout session
 router.post("/checkout", async (req, res) => {
   //TO-DO will get paid myself and alter transfer manually to service provider

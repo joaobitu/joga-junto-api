@@ -64,6 +64,12 @@ const parkSchema = new mongoose.Schema({
         max: 22,
         required: true,
       },
+      creditsPerHour: {
+        type: Number,
+        min: 800,
+        max: 5000,
+        required: true,
+      },
     },
   ],
   rating: Number,

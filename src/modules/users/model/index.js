@@ -95,6 +95,16 @@ const userSchema = new mongoose.Schema({
       required: true,
     },
   },
+  credits: {
+    available: {
+      type: Number,
+      default: 0,
+    },
+    inUse: {
+      type: Number,
+      default: 0,
+    },
+  },
 });
 
 const UserModel = mongoose.model("Users", userSchema);
