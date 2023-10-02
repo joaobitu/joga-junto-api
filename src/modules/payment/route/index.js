@@ -25,7 +25,7 @@ router.post("/service-provider", async (req, res) => {
 
 // checkout session
 router.post("/checkout", async (req, res) => {
-  //TO-DO will get paid myself and alter transfer manually to service provider
+  //INFO will get paid myself and alter transfer manually to service provider
   const { priceId } = req.body;
 
   const session = await stripe.checkout.sessions.create({

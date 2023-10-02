@@ -15,55 +15,26 @@ router.get("/unavailable-timeslots", unavailableTimeslots, async (req, res) => {
   res.send(res.unavailableTimeslots);
 });
 
-// get match list by distance
+// get match list
 router.get("/", async (req, res) => {
-  //TO-DO aggregate bug still here
-  //TO-DO need to remove matches that are already finished/started
-  //TO-DO need to remove matches that are already full
-  //TO-DO need to remove matches that were created by an SP
-  const aggregateResults = await MatchModel.aggregate([
+  const aggregateResults = await MatchModel.find(
     {
-      $lookup: {
-        from: "parks",
-        let: { matchId: "$_id" },
-        pipeline: [
-          {
-            $geoNear: {
-              near: {
-                type: "Point",
-                coordinates: [Number(req.query.lng), Number(req.query.lat)],
-              },
-              distanceField: "distanceInKilometers",
-              distanceMultiplier: 0.001,
-              spherical: true,
-            },
-          },
-          {
-            $match: {
-              $expr: {
-                $in: ["$$matchId", "$courts.matches"],
-              },
-            },
-          },
-        ],
-        as: "park",
+      status: "upcoming",
+      isMatchFromSP: false,
+      // show non-full matches
+      $expr: {
+        $lt: ["$players.starters", "$playersNeeded.starters"],
+        $lt: ["$players.subs", "$playersNeeded.subs"],
       },
     },
+    null,
     {
-      $unwind: "$park",
-    },
-    {
-      $addFields: {
-        distanceInKilometers: "$distanceInKilometers",
-      },
-    },
-    // need to sort by distance
-    {
-      $sort: {
-        distanceInKilometers: 1,
-      },
-    },
-  ]);
+      skip: Number(req.query.t) * (Number(req.query.p) - 1) || 0,
+      limit: Number(req.query.t) || 10,
+      // sort by matches with the most players and then by the closest to the current time
+      sort: "-players.starters.length -players.subs.length startTime",
+    }
+  );
 
   const totalMatches = await MatchModel.countDocuments();
 
@@ -79,33 +50,22 @@ router.get("/", async (req, res) => {
   res.send(result);
 });
 
-//updating match details
-router.patch("/:id", getMatch, async (req, res) => {
-  //TO-DO consider if this is needed actually, none of the math updating should be done here, best to delete and create a new match
-  if (req.user.id !== req.match.owner) {
-    return res
-      .status(401)
-      .json({ message: "Unauthorized, You may only update your match" });
-  }
-
-  const fieldsToUpdate = req.body;
-
-  for (let field in fieldsToUpdate) {
-    res.match[field] = fieldsToUpdate[field];
-  }
-
-  try {
-    const updated = await res.match.save();
-    res.json(updated);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
-
 //join a match
 router.patch("/:id/join", getMatch, async (req, res) => {
   const playerId = req?.user?.id;
   const creditsOffered = req?.body?.creditsOffered;
+
+  const updateUserModel = () => {
+    req.user.currentMatch = res.match._id;
+    req.user.credits.inUse += creditsOffered || 0;
+    req.user.credits.available -= creditsOffered || 0;
+  };
+
+  if (req.user.currentMatch) {
+    return res.status(400).json({
+      message: `You are already in a match, please leave your current match before joining another one`,
+    });
+  }
 
   if (
     res.match.players.starters.some((player) => player.id === playerId) ||
@@ -116,11 +76,13 @@ router.patch("/:id/join", getMatch, async (req, res) => {
         id: playerId,
         creditsOffered: creditsOffered || 0,
       });
+      updateUserModel();
     } else if (res.match.players.subs.length < res.match.playersNeeded.subs) {
       res.match.players.subs.push({
         id: playerId,
         creditsOffered: creditsOffered || 0,
       });
+      updateUserModel();
     } else {
       return res.status(400).json({ message: "Match is full" });
     }
@@ -128,10 +90,7 @@ router.patch("/:id/join", getMatch, async (req, res) => {
 
   try {
     const updated = await res.match.save();
-    //TO-DO need to update the user credits from available to inUse
-    //TO-DO need to update the user matchesSubscribed
-    //TO-DO need to check if the user has enough credits to join the match
-    //TO-DO need to check if the user is already in the match
+    await req.user.save();
     res.json(updated);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -149,6 +108,18 @@ router.patch("/:id/leave", getMatch, async (req, res) => {
     (player) => player.id === playerId
   );
 
+  if (res.user.currentMatch !== res.match._id) {
+    return res.status(400).json({
+      message: `You are not in this match`,
+    });
+  }
+
+  const updateUserModel = () => {
+    req.user.currentMatch = null;
+    req.user.credits.available += req.user.credits.inUse;
+    req.user.credits.inUse = 0;
+  };
+
   if (isPlayerAStarter) {
     const player = res.match.players.starters.find(
       (player) => player.id === playerId
@@ -159,14 +130,13 @@ router.patch("/:id/leave", getMatch, async (req, res) => {
       (player) => player.id === playerId
     );
     res.match.players.subs.pull(player);
-  } else {
-    return res.status(400).json({ message: "Player not in match" });
   }
+
+  updateUserModel();
 
   try {
     const updated = await res.match.save();
-    //TO-DO need to update the user credits from inUse to available
-    //TO-DO need to update the user matchesSubscribed
+    await req.user.save();
     res.json(updated);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -176,6 +146,7 @@ router.patch("/:id/leave", getMatch, async (req, res) => {
 router.patch("/:id/kick/:playerId", getMatch, async (req, res) => {
   const isOwner = req?.user?.id === res.match.owner;
   const playerToKickId = req.params.playerId;
+  const playerToKick = await UserModel.findById(playerToKickId);
 
   if (!isOwner) {
     // if you are not the owner you can't kick players
@@ -185,6 +156,16 @@ router.patch("/:id/kick/:playerId", getMatch, async (req, res) => {
     });
   }
 
+  if (playerToKick.currentMatch !== res.match._id) {
+    return res.status(400).json({
+      message: `This player is not in this match`,
+    });
+  }
+  const updateUserModel = () => {
+    playerToKick.currentMatch = null;
+    playerToKick.credits.available += playerToKick.credits.inUse;
+    playerToKick.credits.inUse = 0;
+  };
   if (
     res.match.players.starters.some((player) => player.id === playerToKickId)
   ) {
@@ -199,15 +180,14 @@ router.patch("/:id/kick/:playerId", getMatch, async (req, res) => {
       (player) => player.id === playerToKickId
     );
     res.match.players.subs.pull(player);
-  } else {
-    return res.status(400).json({ message: "Player not in match" });
   }
+
+  updateUserModel();
 
   try {
     const updated = await res.match.save();
 
-    //TO-DO need to update the user credits from inUse to available
-    //TO-DO need to update the user matchesSubscribed
+    await playerToKick.save();
 
     res.json(updated);
   } catch (err) {
@@ -235,6 +215,22 @@ router.patch("/:id/credits/:playerId", getMatch, async (req, res) => {
     });
   }
 
+  const updateUserModel = () => {
+    if (req.user.inUse < creditsOffered) {
+      user.credits.available -= creditsOffered - user.inUse;
+      user.credits.inUse = creditsOffered;
+    } else {
+      user.credits.available += user.inUse - creditsOffered;
+      user.credits.inUse = creditsOffered;
+    }
+  };
+
+  if (!isPlayerAStarter && !isPlayerASub) {
+    return res.status(400).json({
+      message: `This player is not in this match`,
+    });
+  }
+
   if (isPlayerAStarter) {
     const player = res.match.players.starters.find(
       (player) => player.id === playerId
@@ -245,13 +241,13 @@ router.patch("/:id/credits/:playerId", getMatch, async (req, res) => {
       (player) => player.id === playerId
     );
     player.creditsOffered = creditsOffered;
-  } else {
-    return res.status(400).json({ message: "Player not in match" });
   }
+
+  updateUserModel();
 
   try {
     const updated = await res.match.save();
-    //TO-DO if the user adds more credits than he had previously, remove from available and add to inUse OR if the user removes credits, add to available and remove from inUse
+    await user.save();
     res.json(updated);
   } catch (err) {
     res.status(400).json({ message: err.message });
