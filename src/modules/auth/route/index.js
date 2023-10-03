@@ -3,21 +3,53 @@ import passport from "passport";
 import UserModel from "../../users/model/index.js";
 import bcrypt from "bcrypt";
 import authenticationStatus from "../../../common/middleware/authentication/index.js";
+import twilio from "twilio";
+import dotenv from "dotenv";
+dotenv.config();
 
+const accountSid = "ACc19f45a5564e92880b8e4bd2d970c61c";
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const verifySid = "VA5ac8056e53b50121175d2f6b6fdd24a9";
+const client = twilio(accountSid, authToken);
 const router = express.Router();
 
 // register
-router.post("/register", authenticationStatus(false), async (req, res) => {
+router.post(
+  "/register",
+  [authenticationStatus(false), verifyOTP],
+  async (req, res) => {
+    try {
+      const hashedPassword = await bcrypt.hash(req.body.password, 10);
+      const user = new UserModel({
+        name: req?.body?.name,
+        email: req?.body?.email,
+        phoneNumber: req?.body?.phoneNumber,
+        dateOfBirth: req?.body?.dateOfBirth,
+        password: hashedPassword,
+      });
+
+      const newUser = await user.save();
+      res.status(201).json(newUser);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  }
+);
+
+//send verification code
+router.post("/verify-phone-number", async (req, res) => {
   try {
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
-    const user = new UserModel({
-      name: req?.body?.name,
-      email: req?.body?.email,
-      dateOfBirth: req?.body?.dateOfBirth,
-      password: hashedPassword,
+    const otpResponse = client.verify.v2
+      .services(verifySid)
+      .verifications.create({
+        to: `+55${req.body.phoneNumber}`,
+        channel: "sms",
+      })
+      .then((verification) => verification.status);
+
+    res.status(200).json({
+      message: `OTP sent successfully! ${JSON.stringify(otpResponse)}`,
     });
-    const newUser = await user.save();
-    res.status(201).json(newUser);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -75,4 +107,22 @@ router.delete("/logout", authenticationStatus(true), (req, res) => {
   res.send("logged out");
 });
 
+async function verifyOTP(req, res, next) {
+  const { phoneNumber, verificationCode } = req.body;
+  try {
+    const verifiedResponse = await client.verify.v2
+      .services(verifySid)
+      .verificationChecks.create({
+        to: `+55${phoneNumber}`,
+        code: verificationCode,
+      });
+    if (verifiedResponse.status === "approved") {
+      next();
+    } else {
+      res.status(401).json({ message: "wrong verification code" });
+    }
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+}
 export default router;

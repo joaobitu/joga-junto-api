@@ -138,8 +138,19 @@ POST http://localhost:3000/auth/register
 Content-Type: application/json
 
 {
-    "email": "any@any.com",
-    "password": "test"
+    "email": "an221@any.com",
+    "password": "test",
+    "phoneNumber": "47989196804",
+    "verificationCode": "121650"
+}
+
+//sends verification code
+###
+POST http://localhost:3000/auth/verify-phone-number
+Content-Type: application/json
+
+{
+    "phoneNumber": "47989196804"
 }
 
 //login 
