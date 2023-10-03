@@ -77,6 +77,11 @@ const userSchema = new mongoose.Schema({
       default: 0,
     },
   },
+  phoneNumber: {
+    type: String,
+    required: true,
+    match: /^\d{10,11}$/,
+  },
 });
 
 const UserModel = mongoose.model("Users", userSchema);
