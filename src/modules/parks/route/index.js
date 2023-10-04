@@ -18,6 +18,7 @@ router.get("/", async (req, res) => {
   const aggregateResultsWithFormattedAddress = aggregateResults.map((park) => ({
     ...park,
     formattedaddress: `${park.address.street}, ${park.address.number} - ${park.address.neighborhood}, ${park.address.city} - ${park.address.state.abbreviation}`,
+    id: park._id,
   }));
 
   const totalParks = await ParkModel.countDocuments();

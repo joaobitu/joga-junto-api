@@ -21,7 +21,7 @@ const pictureSchema = new mongoose.Schema({
   module: {
     type: String,
     required: true,
-    enum: ["user", "park", "match", "court"],
+    enum: ["user", "park", "court"],
   },
 });
 

@@ -19,20 +19,20 @@ router.get("/unavailable-timeslots", unavailableTimeslots, async (req, res) => {
 router.get("/", async (req, res) => {
   const aggregateResults = await MatchModel.find(
     {
-      status: "upcoming",
-      isMatchFromSP: false,
+      //status: "upcoming",
+      //isMatchFromSP: false,
       // show non-full matches
-      $expr: {
-        $lt: ["$players.starters", "$playersNeeded.starters"],
-        $lt: ["$players.subs", "$playersNeeded.subs"],
-      },
+      // $expr: {
+      //   $lt: ["$players.starters", "$playersNeeded.starters"],
+      //   $lt: ["$players.subs", "$playersNeeded.subs"],
+      // },
     },
     null,
     {
       skip: Number(req.query.t) * (Number(req.query.p) - 1) || 0,
       limit: Number(req.query.t) || 10,
       // sort by matches with the most players and then by the closest to the current time
-      sort: "-players.starters.length -players.subs.length startTime",
+      //sort: "-players.starters.length -players.subs.length startTime",
     }
   );
 

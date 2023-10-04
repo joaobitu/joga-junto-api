@@ -31,13 +31,7 @@ const parkSchema = new mongoose.Schema({
     opening: String,
     closing: String,
   },
-  parkType: String,
-  pictures: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Pictures",
-    },
-  ],
+  pictures: [String],
   courts: [
     {
       thumbnail: [
@@ -50,7 +44,7 @@ const parkSchema = new mongoose.Schema({
         type: String,
         enum: ["indoor", "beach", "traditional", "society"],
         default: "traditional",
-        required: true,
+        // required: true,
       },
       matches: [
         {
@@ -62,13 +56,13 @@ const parkSchema = new mongoose.Schema({
         type: Number,
         min: 6,
         max: 22,
-        required: true,
+        // required: true,
       },
       creditsPerHour: {
         type: Number,
         min: 800,
         max: 5000,
-        required: true,
+        //  required: true,
       },
     },
   ],

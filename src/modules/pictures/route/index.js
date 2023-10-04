@@ -3,6 +3,7 @@ import PictureModel from "../model/index.js";
 import upload from "../../../config/multer/index.js";
 import { gcBucket } from "../../../config/multer/index.js";
 import { uuidv4 } from "../../../common/middleware/utility/coordinateSort/index.js";
+import ParkModel from "../../parks/model/index.js";
 const router = express.Router();
 
 // get picture by id
@@ -40,6 +41,13 @@ router.post("/", upload.single("file"), async (req, res) => {
       await picture.save();
 
       res.json(picture);
+
+      //TO-DO need to update also to allow for courts and users
+      if (module === "park") {
+        const park = await ParkModel.findById(parentId);
+        park.pictures.push(picture.src);
+        await park.save();
+      }
     });
     blobStream.end(file.buffer);
   } catch (err) {
