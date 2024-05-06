@@ -266,7 +266,7 @@ router.post("/", unavailableTimeslots, async (req, res) => {
       message: `You can't have more starters than the court capacity`,
     });
   }
-
+  console.log(req.user)
   const match = new MatchModel({
     courtId: req?.body?.courtId,
     park: req?.body?.park,
@@ -276,6 +276,7 @@ router.post("/", unavailableTimeslots, async (req, res) => {
     playersNeeded: req?.body?.playersNeeded,
     note: req?.body?.note,
     owner: req?.user?.id || req?.body?.owner,
+    creditsPerHour: req?.body?.creditsPerHour
   });
 
   if (res.unavailableTimeslots) {
@@ -455,12 +456,12 @@ async function getMatch(req, res, next) {
 }
 
 async function unavailableTimeslots(req, res, next) {
-  const { date, courtId } = req.query;
+  const { startTime, courtId } = req.query;
   // checks the list of matches for the court on the date
 
   const matches = await MatchModel.find({
     courtId,
-    startTime: { $gte: new Date(date) },
+    startTime: { $gte: startTime },
   });
 
   const unavailableTimeslots = matches.map((match) => {

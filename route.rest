@@ -30,10 +30,15 @@ Content-Type: application/json
     "currentPlayers": 10,
     "location" : {
         "coordinates": [-104.9903, 39.7392]
-    }
+    },
+    "courts": [{
+        "genre": "traditional",
+        "capacity": 21,
+        "creditsPerHour": 1000
+    }] 
 }
 ###
-GET http://localhost:3000/parks/6508c1cd6f646ca3524a9b41
+GET http://localhost:3000/parks/6638380b343211d8dbbf3bb3
 
 ###
 DELETE http://localhost:3000/parks/6508c1cd6f646ca3524a9afb
@@ -59,23 +64,29 @@ Content-Type: application/json
 //matches endpoint
 
 
-###
+### 
 GET http://localhost:3000/matches/court/6508ec1cfaa6f5333ba3ff8d
 
-###
+### 
 POST http://localhost:3000/matches
 Content-Type: application/json
 
 {
-    
-    "courtId": "6508ec1cfaa6f5333ba3ff8d",
-    "date": "2021-09-01T00:00:00.000Z",
+    "park": "66391f90be903d0ea8f4feae",
+    "courtId": "66391f90be903d0ea8f4feaf",
+    "startTime": "2024-05-07T18:39:15Z",
+    "endTime": "2024-05-08T18:39:15Z", 
     "duration": 2,
-    "note": "any n testttote"
+    "note": "any n testttote",
+    "playersNeeded": {
+        "starters": 11,
+        "subs": 0
+    },
+    "creditsPerHour": 1000
 }
 
 ###
-PATCH http://localhost:3000/matches/6508fe5899e64adaf99e2f91
+PATCH http://localhost:3000/matches/66392f7acbefd0902ea90a3c
 Content-Type: application/json
 
 {
@@ -91,26 +102,6 @@ GET http://localhost:3000/matches/65090835e5c8ac441c43ce93
 ###
 DELETE http://localhost:3000/matches/6508c1cd6f646ca3524a9afb
 
-// COURTS
-
-###
-GET http://localhost:3000/courts/6508ec1cfaa6f5333ba3ff8d
-
-###
-POST http://localhost:3000/courts
-Content-Type: application/json
-
-{
-    "parkId": "6502370003780e82227f3d27",
-    "courtName": "Court 1",
-    "courtType": "Indoor",
-    "courtNumber": 1,
-    "courtDescription": "test"
-}
-
-###
-GET http://localhost:3000/courts/park/6502370003780e82227f3d27
-
 //pictures
 
 ###
@@ -121,7 +112,7 @@ POST http://localhost:3000/pictures
 Content-Type: application/json
 
 {
-    "url": "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.nba.com%2Fnews%2Ffeatures%2Ftop-10-plays-of-the-week%2F&psig=AOvVaw0QZQ4Z4Z3Z4Z3Z4Z3Z4Z3Z4&ust=1629989850000000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCJjQ9ZqH9_ICFQAAAAAdAAAAABAD",
+    "url": "https://images-assets.nasa.gov/image/PIA17669/PIA17669~small.jpg",
     "alt": "test",
     "parentId": "6502370003780e82227f3d27",
     "module": "court" 
@@ -138,10 +129,10 @@ POST http://localhost:3000/auth/register
 Content-Type: application/json
 
 {
-    "email": "an221@any.com",
+    "email": "any@any.com",
     "password": "test",
     "phoneNumber": "47989196804",
-    "verificationCode": "121650"
+    "verificationCode": "477038"
 }
 
 //sends verification code
@@ -153,8 +144,8 @@ Content-Type: application/json
     "phoneNumber": "47989196804"
 }
 
-//login 
-###
+//login  
+### 
 POST http://localhost:3000/auth/login
 Content-Type: application/json
 

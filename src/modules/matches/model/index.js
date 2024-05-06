@@ -63,7 +63,7 @@ const matchSchema = new mongoose.Schema({
     message: "Match needs to be at least 1 hour in the future",
   },
   endTime: {
-    type: Date,
+    type: Date, 
     required: true,
     validate: function (input) {
       // needs to be at least 1:30 hours in the future and can't be before the start time

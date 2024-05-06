@@ -1,7 +1,7 @@
 import express from "express";
 import passport from "passport";
 import UserModel from "../../users/model/index.js";
-import bcrypt from "bcrypt";
+import bcryptjs from "bcryptjs";
 import authenticationStatus from "../../../common/middleware/authentication/index.js";
 import twilio from "twilio";
 import dotenv from "dotenv";
@@ -19,7 +19,7 @@ router.post(
   [authenticationStatus(false), verifyOTP],
   async (req, res) => {
     try {
-      const hashedPassword = await bcrypt.hash(req.body.password, 10);
+      const hashedPassword = await bcryptjs.hash(req.body.password, 10);
       const user = new UserModel({
         name: req?.body?.name,
         email: req?.body?.email,
@@ -78,12 +78,12 @@ router.patch(
     try {
       const user = await UserModel.findById(req.user.id);
       if (user) {
-        const isPasswordCorrect = await bcrypt.compare(
+        const isPasswordCorrect = await bcryptjs.compare(
           req.body.oldPassword,
           user.password
         );
         if (isPasswordCorrect) {
-          const hashedPassword = await bcrypt.hash(req.body.newPassword, 10);
+          const hashedPassword = await bcryptjs.hash(req.body.newPassword, 10);
           user.password = hashedPassword;
           await user.save();
           res.status(200).json({ message: "password changed" });

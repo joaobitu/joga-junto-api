@@ -7,6 +7,7 @@ const router = express.Router();
 
 // getting parks List paginated and by distance
 router.get("/", async (req, res) => {
+  console.log(req.user)
   const aggregateResults = await ParkModel.aggregate(
     coordinateSort(Number(req.query.lng), Number(req.query.lat), {
       o: Number(req.query.o) || 1,

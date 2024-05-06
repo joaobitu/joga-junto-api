@@ -8,7 +8,7 @@ import initializePassport from "./src/config/passport/index.js";
 import cors from "cors";
 import helmet from "helmet";
 import indexRouter from "./src/common/routes/index.js";
-import authenticationStatus from "./src/common/middleware/authentication/index.js";
+
 
 dotenv.config();
 
