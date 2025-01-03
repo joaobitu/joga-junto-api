@@ -1,5 +1,7 @@
 function authenticationStatus(desiredStatus) {
   return function (req, res, next) {
+    console.log('outside the IF ' + req.isAuthenticated())
+    console.log(req.user)
     if (req.isAuthenticated() === desiredStatus) {
       return next();
     } else {

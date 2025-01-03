@@ -15,6 +15,17 @@ router.get("/unavailable-timeslots", unavailableTimeslots, async (req, res) => {
   res.send(res.unavailableTimeslots);
 });
 
+//get match list by park id
+router.get("/park/:id", async (req,res) => {
+  const matches = await MatchModel.find({
+    park: req.params.id
+  }).sort({
+    startTime: -1
+  })
+
+  res.send(matches)
+})
+
 // get match list
 router.get("/", async (req, res) => {
   const aggregateResults = await MatchModel.find(
@@ -266,7 +277,7 @@ router.post("/", unavailableTimeslots, async (req, res) => {
       message: `You can't have more starters than the court capacity`,
     });
   }
-  console.log(req.user)
+  
   const match = new MatchModel({
     courtId: req?.body?.courtId,
     park: req?.body?.park,

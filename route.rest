@@ -9,6 +9,9 @@ Content-Type: application/json
 }
 
 ###
+GET http://localhost:3000/matches/park/66391f90be903d0ea8f4feae
+
+###
 POST http://localhost:3000/parks
 Content-Type: application/json
 

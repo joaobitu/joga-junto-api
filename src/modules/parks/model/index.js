@@ -36,8 +36,7 @@ const parkSchema = new mongoose.Schema({
     {
       thumbnail: [
         {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Pictures",
+          type: String
         },
       ],
       genre: {
@@ -66,8 +65,6 @@ const parkSchema = new mongoose.Schema({
       },
     },
   ],
-  rating: Number,
-  ratingCount: Number,
 });
 parkSchema.set("toJSON", { virtuals: true });
 

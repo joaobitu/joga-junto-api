@@ -47,6 +47,10 @@ router.post("/", upload.single("file"), async (req, res) => {
         const park = await ParkModel.findById(parentId);
         park.pictures.push(picture.src);
         await park.save();
+      } else if (module === "court") {
+        const park = await ParkModel.findById(parentId);
+        park.courts.filter(court => court._id === req.params.id).thumbnail.push(picture.src)
+        await park.save();
       }
     });
     blobStream.end(file.buffer);
